@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Hoops Communicator - Scene Property Edition</title>
+    <script type="text/javascript" src="scripts/hoops_web_viewer.js"></script>
+  </head>
+  <body>
+    <div id="app">
+      <div id="viewer"></div>
+      <nav>
+        <fieldset>
+          <legend>Specular Color</legend>
+          <div class="input-row">
+            <label for="specular-node">Node</label>
+            <input
+              type="number"
+              name="specular-node"
+              id="specular-node"
+              value="0"
+            />
+            <input type="color" name="specular-color" id="specular-color" />
+            <button name="specular-apply" id="specular-apply">apply</button>
+            <button name="specular-clear" id="specular-clear">clear</button>
+          </div>
+        </fieldset>
+        <fieldset>
+          <legend>Ambient Color</legend>
+          <div class="input-row">
+            <label for="ambient-node">Node</label>
+            <input
+              type="number"
+              name="ambient-node"
+              id="ambient-node"
+              value="0"
+            />
+            <input type="color" name="ambient-color" id="ambient-color" />
+            <button name="ambient-apply" id="ambient-apply">apply</button>
+            <button name="ambient-clear" id="ambient-clear">clear</button>
+          </div>
+        </fieldset>
+        <fieldset>
+          <legend>Emissive Color</legend>
+          <div class="input-row">
+            <label for="emissive-node">Node</label>
+            <input
+              type="number"
+              name="emissive-node"
+              id="emissive-node"
+              value="0"
+            />
+            <input type="color" name="emissive-color" id="emissive-color" />
+            <button name="emissive-apply" id="emissive-apply">apply</button>
+            <button name="emissive-clear" id="emissive-clear">clear</button>
+          </div>
+        </fieldset>
+
+        <fieldset id="lights-field">
+          <legend>Lights</legend>
+          <fieldset style="display: flex; flex-flow: column nowrap">
+            <legend id="light-0-legend">Light 0</legend>
+            <fieldset>
+              <legend>Position</legend>
+              <input
+                id="light-0-pos-x"
+                type="number"
+                name="light-pos-x"
+                value="0"
+              />
+              <input
+                id="light-0-pos-y"
+                type="number"
+                name="light-pos-y"
+                value="0"
+              />
+              <input
+                id="light-0-pos-z"
+                type="number"
+                name="light-pos-z"
+                value="0"
+              />
+            </fieldset>
+            <div>
+              <input id="light-0-color" type="color" />
+              <label for="light-space"> Space </label>
+              <select id="light-0-space">
+                <option value="camera">Camera</option>
+                <option value="world" selected>World</option>
+              </select>
+              <button id="light-0-update">update</button>
+              <button id="light-0-remove">remove</button>
+            </div>
+          </fieldset>
+          <fieldset style="display: flex; flex-flow: column nowrap">
+            <legend id="light-1-legend">Light 1</legend>
+            <fieldset>
+              <legend>Position</legend>
+              <input
+                id="light-1-pos-x"
+                type="number"
+                name="light-pos-x"
+                value="0"
+              />
+              <input
+                id="light-1-pos-y"
+                type="number"
+                name="light-pos-y"
+                value="0"
+              />
+              <input
+                id="light-1-pos-z"
+                type="number"
+                name="light-pos-z"
+                value="0"
+              />
+            </fieldset>
+            <div>
+              <input id="light-1-color" type="color" />
+              <label for="light-space"> Space </label>
+              <select id="light-1-space">
+                <option value="camera">Camera</option>
+                <option value="world" selected>World</option>
+              </select>
+              <button id="light-1-update">update</button>
+              <button id="light-1-remove">remove</button>
+            </div>
+          </fieldset>
+          <fieldset style="display: flex; flex-flow: column nowrap">
+            <legend id="light-2-legend">Light 2</legend>
+            <fieldset>
+              <legend>Position</legend>
+              <input
+                id="light-2-pos-x"
+                type="number"
+                name="light-pos-x"
+                value="0"
+              />
+              <input
+                id="light-2-pos-y"
+                type="number"
+                name="light-pos-y"
+                value="0"
+              />
+              <input
+                id="light-2-pos-z"
+                type="number"
+                name="light-pos-z"
+                value="0"
+              />
+            </fieldset>
+            <div>
+              <input id="light-2-color" type="color" />
+              <label for="light-space"> Space </label>
+              <select id="light-2-space">
+                <option value="camera">Camera</option>
+                <option value="world" selected>World</option>
+              </select>
+              <button id="light-2-update">update</button>
+              <button id="light-2-remove">remove</button>
+            </div>
+          </fieldset>
+          <fieldset style="display: flex; flex-flow: column nowrap">
+            <legend id="light-3-legend">Light 3</legend>
+            <fieldset>
+              <legend>Position</legend>
+              <input
+                id="light-3-pos-x"
+                type="number"
+                name="light-pos-x"
+                value="0"
+              />
+              <input
+                id="light-3-pos-y"
+                type="number"
+                name="light-pos-y"
+                value="0"
+              />
+              <input
+                id="light-3-pos-z"
+                type="number"
+                name="light-pos-z"
+                value="0"
+              />
+            </fieldset>
+            <div>
+              <input id="light-3-color" type="color" />
+              <label for="light-space"> Space </label>
+              <select id="light-3-space">
+                <option value="camera">Camera</option>
+                <option value="world" selected>World</option>
+              </select>
+              <button id="light-3-update">update</button>
+              <button id="light-3-remove">remove</button>
+            </div>
+          </fieldset>
+          <hr />
+          <div>
+            <button id="lights-clear">clear</button>
+          </div>
+        </fieldset>
+      </nav>
+      <div id="cmd-container">
+        <div id="cmd-history"></div>
+        <div id="cmd-controls">
+          <button id="cmd-save">save</button>
+          <label for="cmd-load">load</label>
+          <input
+            type="file"
+            id="cmd-load"
+            name="cmd-load"
+            accept="application/json"
+          />
+          <button id="cmd-clear">clear</button>
+        </div>
+      </div>
+    </div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

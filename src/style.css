@@ -1,0 +1,85 @@
+html {
+  font-size: 16px;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+}
+
+#app {
+  display: flex;
+  flex-flow: row wrap;
+  justify-content: space-evenly;
+  align-items: flex-start;
+  width: 100vw;
+  height: 100vh;
+  height: 100svh;
+}
+
+#viewer {
+  position: relative;
+  min-width: 30%;
+  min-height: 480px;
+  height: 90%;
+  margin-top: 1rem;
+
+  border: solid 1px black;
+}
+
+nav {
+  min-width: 30%;
+  height: 90%;
+  margin-top: 1rem;
+  overflow: auto;
+}
+
+fieldset {
+  display: flex;
+  align-items: center;
+  padding: 0.5rem 1rem;
+}
+
+#lights-field {
+  display: flex;
+  flex-flow: column;
+}
+
+button {
+  padding: 0.25rem 0.5rem;
+}
+
+input[type="number"] {
+  max-width: 8rem;
+}
+
+.input-row {
+  display: flex;
+  flex-flow: row nowrap;
+  gap: 1rem;
+  justify-content: flex-start;
+  align-items: center;
+}
+
+#cmd-container {
+  display: flex;
+  flex-flow: column nowrap;
+  min-width: 30%;
+  height: 90%;
+  margin-top: 1rem;
+}
+
+#cmd-history {
+  min-height: 90%;
+  border: solid 1px black;
+}
+
+#cmd-controls {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+
+  margin-top: 0.5rem;
+}
