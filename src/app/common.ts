@@ -10,8 +10,6 @@ export function getElementById<T extends HTMLElement>(id: string): T {
   return elm;
 }
 
-export const CmdBuilder = new Builder();
+export const cmdBuilder = new Builder();
 
-CmdBuilder.withCommands(
-  ...Object.values(commands).map((cmd) => CmdBuilder.buildCommand(cmd))
-);
+cmdBuilder.withCommands(...commands);

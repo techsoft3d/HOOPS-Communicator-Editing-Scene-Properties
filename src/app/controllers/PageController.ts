@@ -1,6 +1,6 @@
 import { CommandRecord } from "../../lib/commands";
 import Interpreter from "../../lib/commands/Interpreter";
-import { CmdBuilder, getElementById } from "../common";
+import { cmdBuilder, getElementById } from "../common";
 
 export default class PageController {
   public readonly viewerContainerElm: HTMLDivElement;
@@ -31,8 +31,8 @@ export default class PageController {
       endpointUri: "models/microengine.scs",
     });
 
-    this.cmd = CmdBuilder.buildInterpreter(
-      CmdBuilder.buildEnv({
+    this.cmd = cmdBuilder.buildInterpreter(
+      cmdBuilder.buildEnv({
         hwv: this.hwv,
       })
     );
