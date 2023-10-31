@@ -12,4 +12,6 @@ export function getElementById<T extends HTMLElement>(id: string): T {
 
 export const CmdBuilder = new Builder();
 
-CmdBuilder.withCommands(...Object.values(commands));
+CmdBuilder.withCommands(
+  ...Object.values(commands).map((cmd) => CmdBuilder.buildCommand(cmd))
+);
