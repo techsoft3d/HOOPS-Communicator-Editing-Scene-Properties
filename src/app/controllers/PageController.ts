@@ -40,7 +40,7 @@ export default class PageController {
 
   updateHistory() {
     const formatRecord = (record: CommandRecord) =>
-      `${record.command}: ${record.context}`;
+      `${record.command}: ${record.args}`;
 
     this.historyElm.innerHTML = this.cmd.history.records
       .map((record) => formatRecord(record))
