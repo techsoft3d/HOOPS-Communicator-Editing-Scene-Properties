@@ -19,6 +19,9 @@ export class Builder {
   public parseEnv: (env: CommandEnv, str: string) => Promise<void>;
   public serializeEnv: (env: CommandEnv) => Promise<string>;
 
+  public parseCommand: (str: string) => Promise<unknown>;
+  public serializeCommand: (context: unknown) => Promise<string>;
+
   constructor() {
     this._history = new History();
     this._serializer = new Serializer();
@@ -40,6 +43,9 @@ export class Builder {
       const viewer = env.hwv.getViewerVersionString();
       return JSON.stringify({ format, viewer });
     };
+
+    this.parseCommand = async (str: string) => JSON.parse(str);
+    this.serializeCommand = async (context: unknown) => JSON.stringify(context);
   }
 
   /**
@@ -154,15 +160,34 @@ export class Builder {
   public buildEnv(
     env: Partial<CommandEnv> & { hwv: Communicator.WebViewer }
   ): CommandEnv {
-    if (!env.parse) {
-      env.parse = this.parseEnv;
+    if (!env.parser) {
+      env.parser = this.parseEnv.bind(env);
     }
 
-    if (!env.serialize) {
-      env.serialize = this.serializeEnv;
+    if (!env.serializer) {
+      env.serializer = this.serializeEnv;
     }
 
     return env as CommandEnv;
+  }
+
+  /**
+   * Build a command by adding a serialize function and a parse function to it
+   * if they are missing.
+   *
+   * @param cmd the partial Command to build.
+   * @returns A Command with a parse function and a serialize function.
+   */
+  public buildCommand(cmd: Command): Required<Command> {
+    if (!cmd.parse) {
+      cmd.parse = this.parseCommand;
+    }
+
+    if (!cmd.serialize) {
+      cmd.serialize = this.serializeCommand;
+    }
+
+    return cmd as Required<Command>;
   }
 
   /**
