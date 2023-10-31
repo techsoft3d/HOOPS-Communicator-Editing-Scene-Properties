@@ -1,4 +1,5 @@
 import { Interpreter } from "../../lib/commands";
+import { getElementById } from "../common";
 
 export default class PhongController {
   public readonly specularNodeIdElm: HTMLInputElement;
@@ -17,30 +18,20 @@ export default class PhongController {
   public readonly emissiveClearBtn: HTMLButtonElement;
 
   constructor() {
-    const getElm = <T extends HTMLElement>(id: string): T => {
-      const elm = document.getElementById(id) as T | null;
+    this.specularNodeIdElm = getElementById<HTMLInputElement>(`specular-node`);
+    this.specularColorElm = getElementById<HTMLInputElement>(`specular-color`);
+    this.specularApplyBtn = getElementById<HTMLButtonElement>(`specular-apply`);
+    this.specularClearBtn = getElementById<HTMLButtonElement>(`specular-clear`);
 
-      if (!elm) {
-        throw new Error(`missing dom element '${id}'`);
-      }
+    this.ambientNodeIdElm = getElementById<HTMLInputElement>(`ambient-node`);
+    this.ambientColorElm = getElementById<HTMLInputElement>(`ambient-color`);
+    this.ambientApplyBtn = getElementById<HTMLButtonElement>(`ambient-apply`);
+    this.ambientClearBtn = getElementById<HTMLButtonElement>(`ambient-clear`);
 
-      return elm;
-    };
-
-    this.specularNodeIdElm = getElm<HTMLInputElement>(`specular-node`);
-    this.specularColorElm = getElm<HTMLInputElement>(`specular-color`);
-    this.specularApplyBtn = getElm<HTMLButtonElement>(`specular-apply`);
-    this.specularClearBtn = getElm<HTMLButtonElement>(`specular-clear`);
-
-    this.ambientNodeIdElm = getElm<HTMLInputElement>(`ambient-node`);
-    this.ambientColorElm = getElm<HTMLInputElement>(`ambient-color`);
-    this.ambientApplyBtn = getElm<HTMLButtonElement>(`ambient-apply`);
-    this.ambientClearBtn = getElm<HTMLButtonElement>(`ambient-clear`);
-
-    this.emissiveNodeIdElm = getElm<HTMLInputElement>(`emissive-node`);
-    this.emissiveColorElm = getElm<HTMLInputElement>(`emissive-color`);
-    this.emissiveApplyBtn = getElm<HTMLButtonElement>(`emissive-apply`);
-    this.emissiveClearBtn = getElm<HTMLButtonElement>(`emissive-clear`);
+    this.emissiveNodeIdElm = getElementById<HTMLInputElement>(`emissive-node`);
+    this.emissiveColorElm = getElementById<HTMLInputElement>(`emissive-color`);
+    this.emissiveApplyBtn = getElementById<HTMLButtonElement>(`emissive-apply`);
+    this.emissiveClearBtn = getElementById<HTMLButtonElement>(`emissive-clear`);
   }
 
   public get specularNodeId(): number {

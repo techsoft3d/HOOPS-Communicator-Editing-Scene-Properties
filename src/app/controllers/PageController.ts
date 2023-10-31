@@ -1,6 +1,6 @@
 import { CommandRecord } from "../../lib/commands";
 import Interpreter from "../../lib/commands/Interpreter";
-import { CmdBuilder } from "../globals";
+import { CmdBuilder, getElementById } from "../common";
 
 export default class PageController {
   public readonly viewerContainerElm: HTMLDivElement;
@@ -19,41 +19,23 @@ export default class PageController {
   public readonly cmd: Interpreter;
 
   constructor() {
-    const getElm = <T extends HTMLElement>(id: string): T => {
-      const elm = document.getElementById(id) as T | null;
-
-      if (!elm) {
-        throw new Error(`missing dom element '${id}'`);
-      }
-
-      return elm;
-    };
-
-    this.viewerContainerElm = getElm<HTMLDivElement>("viewer");
-    this.clearLightsBtn = getElm<HTMLButtonElement>("lights-clear");
-    this.historyElm = getElm<HTMLDivElement>("cmd-history");
-    this.saveHistoryBtn = getElm<HTMLButtonElement>("cmd-save");
-    this.loadHistoryBtn = getElm<HTMLInputElement>("cmd-load");
-    this.clearHistoryBtn = getElm<HTMLButtonElement>("cmd-clear");
+    this.viewerContainerElm = getElementById<HTMLDivElement>("viewer");
+    this.clearLightsBtn = getElementById<HTMLButtonElement>("lights-clear");
+    this.historyElm = getElementById<HTMLDivElement>("cmd-history");
+    this.saveHistoryBtn = getElementById<HTMLButtonElement>("cmd-save");
+    this.loadHistoryBtn = getElementById<HTMLInputElement>("cmd-load");
+    this.clearHistoryBtn = getElementById<HTMLButtonElement>("cmd-clear");
 
     this.hwv = new Communicator.WebViewer({
       container: this.viewerContainerElm,
       endpointUri: "models/microengine.scs",
     });
 
-    const parse = async (_: string) => {
-      return;
-    };
-
-    const serialize = async () => {
-      return "";
-    };
-
-    this.cmd = CmdBuilder.build({
-      hwv: this.hwv,
-      parse,
-      serialize,
-    });
+    this.cmd = CmdBuilder.buildInterpreter(
+      CmdBuilder.buildEnv({
+        hwv: this.hwv,
+      })
+    );
   }
 
   updateHistory() {

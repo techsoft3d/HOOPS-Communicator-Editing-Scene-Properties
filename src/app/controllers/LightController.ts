@@ -1,4 +1,5 @@
 import { Interpreter } from "../../lib/commands";
+import { getElementById } from "../common";
 
 export default class LightController {
   public readonly legend: HTMLLegendElement;
@@ -13,27 +14,17 @@ export default class LightController {
   private _key: number;
 
   constructor(index: number) {
-    const getElm = <T extends HTMLElement>(id: string): T => {
-      const elm = document.getElementById(id) as T | null;
-
-      if (!elm) {
-        throw new Error(`missing dom element '${id}'`);
-      }
-
-      return elm;
-    };
-
     this._key = -1;
-    this.legend = getElm<HTMLLegendElement>(`light-${index}-legend`);
+    this.legend = getElementById<HTMLLegendElement>(`light-${index}-legend`);
 
-    this.posXElm = getElm<HTMLInputElement>(`light-${index}-pos-x`);
-    this.posYElm = getElm<HTMLInputElement>(`light-${index}-pos-y`);
-    this.posZElm = getElm<HTMLInputElement>(`light-${index}-pos-z`);
+    this.posXElm = getElementById<HTMLInputElement>(`light-${index}-pos-x`);
+    this.posYElm = getElementById<HTMLInputElement>(`light-${index}-pos-y`);
+    this.posZElm = getElementById<HTMLInputElement>(`light-${index}-pos-z`);
 
-    this.colorElm = getElm<HTMLInputElement>(`light-${index}-color`);
-    this.spaceElm = getElm<HTMLSelectElement>(`light-${index}-space`);
-    this.updateElm = getElm<HTMLButtonElement>(`light-${index}-update`);
-    this.removeElm = getElm<HTMLButtonElement>(`light-${index}-remove`);
+    this.colorElm = getElementById<HTMLInputElement>(`light-${index}-color`);
+    this.spaceElm = getElementById<HTMLSelectElement>(`light-${index}-space`);
+    this.updateElm = getElementById<HTMLButtonElement>(`light-${index}-update`);
+    this.removeElm = getElementById<HTMLButtonElement>(`light-${index}-remove`);
   }
 
   public get key(): number {
