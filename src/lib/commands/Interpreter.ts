@@ -40,7 +40,7 @@ export class Interpreter {
     return this;
   }
 
-  public async play(command: string, context: unknown): Promise<unknown> {
+  public async play(command: string, context?: unknown): Promise<unknown> {
     const cmd = this.commandMap.get(command);
 
     if (!cmd) {
