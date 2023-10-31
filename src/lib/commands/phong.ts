@@ -16,14 +16,6 @@ export const SetNodesFaceSpecularColorCmd: Command = {
       new Communicator.Color(r, g, b)
     );
   },
-
-  serialize: async (context: unknown) => {
-    return JSON.stringify(context);
-  },
-
-  parse: async (log: string) => {
-    return JSON.parse(log);
-  },
 };
 
 export const UnsetNodesFaceSpecularColorCmd: Command = {
@@ -32,14 +24,6 @@ export const UnsetNodesFaceSpecularColorCmd: Command = {
     const nodeIds = context as number[];
 
     env.hwv.model.unsetNodesFaceSpecularColor(nodeIds);
-  },
-
-  serialize: async (context: unknown) => {
-    return JSON.stringify(context);
-  },
-
-  parse: async (log: string) => {
-    return JSON.parse(log);
   },
 };
 
@@ -53,14 +37,6 @@ export const SetNodesFaceSpecularIntensityCmd: Command = {
 
     env.hwv.model.setNodesFaceSpecularIntensity(args.nodeIds, args.intensity);
   },
-
-  serialize: async (context: unknown) => {
-    return JSON.stringify(context);
-  },
-
-  parse: async (log: string) => {
-    return JSON.parse(log);
-  },
 };
 
 export const UnsetNodesFaceSpecularIntensityCmd: Command = {
@@ -69,14 +45,6 @@ export const UnsetNodesFaceSpecularIntensityCmd: Command = {
     const nodeIds = context as number[];
 
     env.hwv.model.unsetNodesFaceSpecularIntensity(nodeIds);
-  },
-
-  serialize: async (context: unknown) => {
-    return JSON.stringify(context);
-  },
-
-  parse: async (log: string) => {
-    return JSON.parse(log);
   },
 };
 
@@ -96,14 +64,6 @@ export const SetNodesAmbientColorCmd: Command = {
       new Communicator.Color(r, g, b)
     );
   },
-
-  serialize: async (context: unknown) => {
-    return JSON.stringify(context);
-  },
-
-  parse: async (log: string) => {
-    return JSON.parse(log);
-  },
 };
 
 export const SetNodesAmbientMixCmd: Command = {
@@ -115,14 +75,6 @@ export const SetNodesAmbientMixCmd: Command = {
     };
 
     env.hwv.model.setNodesAmbientMix(args.nodeIds, args.intensity);
-  },
-
-  serialize: async (context: unknown) => {
-    return JSON.stringify(context);
-  },
-
-  parse: async (log: string) => {
-    return JSON.parse(log);
   },
 };
 
@@ -142,14 +94,6 @@ export const SetNodesFaceEmissiveColorCmd: Command = {
       new Communicator.Color(r, g, b)
     );
   },
-
-  serialize: async (context: unknown) => {
-    return JSON.stringify(context);
-  },
-
-  parse: async (log: string) => {
-    return JSON.parse(log);
-  },
 };
 
 export const UnsetNodesFaceEmissiveColorCmd: Command = {
@@ -158,13 +102,5 @@ export const UnsetNodesFaceEmissiveColorCmd: Command = {
     const nodeIds = context as number[];
 
     env.hwv.model.unsetNodesFaceEmissiveColor(nodeIds);
-  },
-
-  serialize: async (context: unknown) => {
-    return JSON.stringify(context);
-  },
-
-  parse: async (log: string) => {
-    return JSON.parse(log);
   },
 };
