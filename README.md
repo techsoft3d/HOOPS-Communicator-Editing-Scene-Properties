@@ -15,7 +15,10 @@ The interpreter will be used as a gateway to the edition APIs.
 > const hwv = new Communicator.WebViewer({
 >   /* ... */
 > });
-> const cmd = Builder.buildInterpreter({ hwv });
+>
+> // In order to simplify interpreter tuning we recommend using a builder more
+> // on that later.
+> const cmd = new Interpreter(/* ... */);
 >
 > /* ... */
 >
@@ -211,8 +214,8 @@ page.hwv.setCallbacks({
 > The `refreshLights` function updates the lights UI. You can read
 > [src/main.ts](src/main.ts) if you want to see the implementation details.
 
-As you can see in the sample, you can call the run a command through the command
-interpreter passing the command arguments as the context:
+As you can see in the sample, you can play a command through the command
+interpreter passing the command arguments:
 
 ```ts
 // Command with no arguments
@@ -255,3 +258,103 @@ export default class PageController {
   }
 }
 ```
+
+## Extending the Interpreter
+
+In this section we will explain step by step how you can extend the interpreter
+from adding actions to customize serialization or import and export.
+
+### Adding commands
+
+Let's see a couple of commands:
+
+```ts
+// This is all you need to create a command without argument.
+export const resetCameraCmd: Command = {
+  name: "resetCamera",
+  execute: async (args: unknown, env: CommandEnv) => {
+    return env.hwv.view.resetCamera();
+  },
+};
+
+// Here is an example with an object as argument.
+export const SetNodeFaceColorCmd: Command = {
+  name: "setNodeFaceColor",
+  execute: async (args: unknown, env: CommandEnv) => {
+    const { r, g, b } = args.color;
+
+    return env.hwv.model.setNodeFaceColor(
+      args.node,
+      args.face,
+      new Communicator.Color(r, g, b)
+    );
+  },
+};
+
+// Another example with an array as argument.
+export const unsetNodesFaceColorCmd: Command = {
+  name: "unsetNodesFaceColor",
+  execute: async (args: unknown, env: CommandEnv) => {
+    return env.hwv.model.unsetNodesFaceColor(args);
+  },
+};
+```
+
+> As the args can be extracted from an external source it can be useful to do
+> some schema validation onto it, some test can be performed on arguments to check
+> that it matches the expected type.  
+> More on that later.
+
+Now let's add the commands to our interpreter:
+
+```ts
+const cmd = new Interpreter({
+  /* ... */
+});
+cmd.addCommands(resetCameraCmd, SetNodeFaceColorCmd, unsetNodesFaceColorCmd);
+// You can also add commands one by one
+cmd.addCommands(resetCameraCmd);
+
+// You can chain the operations
+cmd.addCommands(SetNodeFaceColorCmd).addCommands(unsetNodesFaceColorCmd);
+
+// or use spread operator on an array
+cmd.addCommands(
+  ...[
+    /* commands */
+  ]
+);
+```
+
+now you can call the command from the Interpreter:
+
+```ts
+cmd.play("resetCamera");
+```
+
+### Our first Command
+
+A Command is an object that must contain a `name` property and an `execute`
+function.  
+Additionally, a command can contain a `serialize` function and a `parse`
+function.
+
+Let's create a command and improve it step by step.
+
+```ts
+// Here is an example with an object as argument.
+export const setNodeRgbaColorCmd: Command = {
+  name: "setNodeRgbaColor",
+  execute: async (args: unknown, env: CommandEnv) => {
+    const { r, g, b, a } = args.color;
+
+    await this.hwv.model.setNodesFaceColor(
+      [args.nodes],
+      new Communicator.Color(r, g, b)
+    );
+    await this.hwv.model.setNodesOpacity([args.nodes], a);
+  },
+};
+```
+
+This simple command sets the color
