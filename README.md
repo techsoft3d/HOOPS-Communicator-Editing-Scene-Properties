@@ -133,13 +133,13 @@ import PhongController from "./app/controllers/PhongController";
 import PageController from "./app/controllers/PageController";
 
 const page = new PageController();
-const phong = new PhongController();
+const phong = new PhongController(page.cmd);
 
 const lights = [
-  new LightController(0),
-  new LightController(1),
-  new LightController(2),
-  new LightController(3),
+  new LightController(0, page.cmd),
+  new LightController(1, page.cmd),
+  new LightController(2, page.cmd),
+  new LightController(3, page.cmd),
 ];
 ```
 
@@ -166,6 +166,92 @@ export default class PageController {
         hwv: this.hwv,
       })
     );
+  }
+}
+```
+
+In the rest of [src/main.ts](src/main.ts) we will write some utility code to
+bind events on the DOM with our controllers:
+
+```ts
+
+/* ... */
+
+page.hwv.setCallbacks({
+  modelStructureReady: () => {
+    refreshLights();
+    for (let i = 0; i < 4; ++i) {
+      lights[i].updateElm.addEventListener("click", () => {
+        handleLightUpdate(lights[i]);
+      });
+
+      lights[i].removeElm.addEventListener("click", () => {
+        handleLightRemoved(lights[i]);
+      });
+    }
+
+    page.clearLightsBtn.addEventListener("click", () => {
+      page.cmd.play("clearLights").then(() => refreshLights());
+    });
+
+    phong.specularApplyBtn.addEventListener("click", () => {
+      handleSpecularColorApply();
+    });
+
+    phong.specularClearBtn.addEventListener("click", () => {
+      handleSpecularColorClear();
+    });
+
+    /* ... */
+});
+
+/* ... */
+```
+
+> The `refreshLights` function updates the lights UI. You can read
+> [src/main.ts](src/main.ts) if you want to see the implementation details.
+
+As you can see in the sample, you can call the run a command through the command
+interpreter passing the command arguments as the context:
+
+```ts
+// Command with no arguments
+page.cmd.play("clearLights");
+
+// Command with arguments
+page.cmd.play("setNodesAmbientColor", {
+  nodeIds: [nodeId],
+  color: Communicator.Color.red(),
+});
+```
+
+We can also manipulate the history as you can see in
+[src/app/controllers/PageController.ts](src/app/controllers/PageController.ts):
+
+```ts
+export default class PageController {
+  /* ... */
+
+  public readonly hwv: Communicator.WebViewer;
+  public readonly cmd: Interpreter;
+
+  constructor() {
+    /* ... */
+  }
+
+  /* ... */
+
+  async saveHistory() {
+    this.cmd.export("history.json");
+  }
+
+  async loadHistory(file: File) {
+    return this.cmd.import(file);
+  }
+
+  clearHistory() {
+    this.cmd.history.clear();
+    /* ... */
   }
 }
 ```
