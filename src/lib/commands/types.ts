@@ -3,8 +3,8 @@
  */
 export interface CommandEnv {
   hwv: Communicator.WebViewer;
-  serialize: (env: CommandEnv) => Promise<string>;
-  parse: (env: CommandEnv, str: string) => Promise<void>;
+  serializer: (env: CommandEnv) => Promise<string>;
+  parser: (env: CommandEnv, str: string) => Promise<void>;
 }
 
 /**
