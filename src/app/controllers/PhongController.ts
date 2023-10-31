@@ -2,6 +2,8 @@ import { Interpreter } from "../../lib/commands";
 import { getElementById } from "../common";
 
 export default class PhongController {
+  public cmd: Interpreter;
+
   public readonly specularNodeIdElm: HTMLInputElement;
   public readonly specularColorElm: HTMLInputElement;
   public readonly specularApplyBtn: HTMLButtonElement;
@@ -17,7 +19,8 @@ export default class PhongController {
   public readonly emissiveApplyBtn: HTMLButtonElement;
   public readonly emissiveClearBtn: HTMLButtonElement;
 
-  constructor() {
+  constructor(cmd: Interpreter) {
+    this.cmd = cmd;
     this.specularNodeIdElm = getElementById<HTMLInputElement>(`specular-node`);
     this.specularColorElm = getElementById<HTMLInputElement>(`specular-color`);
     this.specularApplyBtn = getElementById<HTMLButtonElement>(`specular-apply`);
@@ -82,49 +85,51 @@ export default class PhongController {
     return { r, g, b };
   }
 
-  public async applySpecularColor(cmd: Interpreter) {
-    await cmd.play("setNodesFaceSpecularColor", {
+  public async applySpecularColor() {
+    await this.cmd.play("setNodesFaceSpecularColor", {
       nodeIds: [this.specularNodeId],
       color: this.specularColor,
     });
-    await cmd.play("setNodesFaceSpecularIntensity", {
+    await this.cmd.play("setNodesFaceSpecularIntensity", {
       nodeIds: [this.specularNodeId],
       intensity: 0.8,
     });
   }
 
-  public async clearSpecularColor(cmd: Interpreter) {
-    await cmd.play("unsetNodesFaceSpecularColor", [this.specularNodeId]);
+  public async clearSpecularColor() {
+    await this.cmd.play("unsetNodesFaceSpecularColor", [this.specularNodeId]);
 
-    await cmd.play("unsetNodesFaceSpecularIntensity", [this.specularNodeId]);
+    await this.cmd.play("unsetNodesFaceSpecularIntensity", [
+      this.specularNodeId,
+    ]);
   }
 
-  public async applyAmbientColor(cmd: Interpreter) {
-    await cmd.play("setNodesAmbientColor", {
+  public async applyAmbientColor() {
+    await this.cmd.play("setNodesAmbientColor", {
       nodeIds: [this.ambientNodeId],
       color: this.ambientColor,
     });
-    await cmd.play("setNodesAmbientMix", {
+    await this.cmd.play("setNodesAmbientMix", {
       nodeIds: [this.ambientNodeId],
       intensity: 0.8,
     });
   }
 
-  public async clearAmbientColor(cmd: Interpreter) {
-    await cmd.play("setNodesAmbientMix", {
+  public async clearAmbientColor() {
+    await this.cmd.play("setNodesAmbientMix", {
       nodeIds: [this.ambientNodeId],
       intensity: 0.0,
     });
   }
 
-  public async applyEmissiveColor(cmd: Interpreter) {
-    await cmd.play("setNodesFaceEmissiveColor", {
+  public async applyEmissiveColor() {
+    await this.cmd.play("setNodesFaceEmissiveColor", {
       nodeIds: [this.emissiveNodeId],
       color: this.emissiveColor,
     });
   }
 
-  public async clearEmissiveColor(cmd: Interpreter) {
-    await cmd.play("unsetNodesFaceEmissiveColor", [this.specularNodeId]);
+  public async clearEmissiveColor() {
+    await this.cmd.play("unsetNodesFaceEmissiveColor", [this.specularNodeId]);
   }
 }

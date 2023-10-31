@@ -2,6 +2,8 @@ import { Interpreter } from "../../lib/commands";
 import { getElementById } from "../common";
 
 export default class LightController {
+  public readonly cmd: Interpreter;
+
   public readonly legend: HTMLLegendElement;
   public readonly posXElm: HTMLInputElement;
   public readonly posYElm: HTMLInputElement;
@@ -13,7 +15,8 @@ export default class LightController {
 
   private _key: number;
 
-  constructor(index: number) {
+  constructor(index: number, cmd: Interpreter) {
+    this.cmd = cmd;
     this._key = -1;
     this.legend = getElementById<HTMLLegendElement>(`light-${index}-legend`);
 
@@ -102,15 +105,15 @@ export default class LightController {
       info.space === Communicator.LightSpace.Camera ? "camera" : "world";
   }
 
-  async apply(cmd: Interpreter) {
+  async apply() {
     if (this.mode === "add") {
-      await cmd.play("addLight", {
+      await this.cmd.play("addLight", {
         position: this.position,
         color: this.color,
         space: this.space,
       });
     } else {
-      await cmd.play("updateLight", {
+      await this.cmd.play("updateLight", {
         key: this.key,
         position: this.position,
         color: this.color,
@@ -119,7 +122,7 @@ export default class LightController {
     }
   }
 
-  async remove(cmd: Interpreter) {
-    return cmd.play("removeLight", this.key);
+  async remove() {
+    return this.cmd.play("removeLight", this.key);
   }
 }
