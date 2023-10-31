@@ -13,26 +13,6 @@ const lights = [
   new LightController(3),
 ];
 
-page.saveHistoryBtn.addEventListener("click", () => {
-  page.saveHistory();
-});
-
-page.loadHistoryBtn.addEventListener("change", (event) => {
-  const inputElm = event.target as HTMLInputElement;
-  const files = inputElm.files;
-  if (!files || files.length === 0) {
-    return;
-  }
-  page.loadHistory(files[0]).then(async () => {
-    page.updateHistory();
-    refreshLights();
-  });
-});
-
-page.clearHistoryBtn.addEventListener("click", () => {
-  page.clearHistory();
-});
-
 const refreshLights = async () => {
   const keys = await page.hwv.view.getLightKeys();
 
@@ -134,6 +114,26 @@ page.hwv.setCallbacks({
 
     phong.emissiveClearBtn.addEventListener("click", () => {
       handleEmissiveColorClear();
+    });
+
+    page.saveHistoryBtn.addEventListener("click", () => {
+      page.saveHistory();
+    });
+
+    page.loadHistoryBtn.addEventListener("change", (event) => {
+      const inputElm = event.target as HTMLInputElement;
+      const files = inputElm.files;
+      if (!files || files.length === 0) {
+        return;
+      }
+      page.loadHistory(files[0]).then(async () => {
+        page.updateHistory();
+        refreshLights();
+      });
+    });
+
+    page.clearHistoryBtn.addEventListener("click", () => {
+      page.clearHistory();
     });
   },
   selectionArray: (events) => {
