@@ -86,7 +86,7 @@ export class Builder {
    * @returns This builder to allow operations chaining
    */
   public withCommands(...commands: Command[]): this {
-    this._commands.push(...commands);
+    this._commands.push(...commands.map((cmd) => this.buildCommand(cmd)));
     return this;
   }
 

@@ -15,9 +15,9 @@ import * as colorCommands from "./colors";
 import * as lightCommands from "./light";
 import * as phongCommands from "./phong";
 
-export const commands = {
+export const commands = Object.values({
   ...highlightCommands,
   ...colorCommands,
   ...lightCommands,
   ...phongCommands,
-};
+});
