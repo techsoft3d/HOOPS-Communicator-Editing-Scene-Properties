@@ -40,7 +40,7 @@ export class Interpreter {
     return this;
   }
 
-  public async play(command: string, context?: unknown): Promise<unknown> {
+  public async play(command: string, args?: unknown): Promise<unknown> {
     const cmd = this.commandMap.get(command);
 
     if (!cmd) {
@@ -49,12 +49,12 @@ export class Interpreter {
       );
     }
 
-    return this.exec(command, cmd, context);
+    return this.exec(command, cmd, args);
   }
 
   public async replay(records: CommandRecord[]): Promise<unknown[]> {
     const result: unknown[] = [];
-    for (const { command, context } of records) {
+    for (const { command, args } of records) {
       const cmd = this.commandMap.get(command);
 
       if (!cmd) {
@@ -64,13 +64,11 @@ export class Interpreter {
       }
 
       if (!cmd.parse) {
-        throw new Error(
-          `Command '${command}' does not support context parsing`
-        );
+        throw new Error(`Command '${command}' does not support args parsing`);
       }
 
-      const ctx = await cmd.parse(context);
-      result.push(await this.exec(command, cmd, ctx));
+      const parsed = await cmd.parse(args);
+      result.push(await this.exec(command, cmd, parsed));
     }
 
     return result;
@@ -95,13 +93,13 @@ export class Interpreter {
   private async exec(
     key: string,
     command: Command,
-    context: unknown
+    args: unknown
   ): Promise<unknown> {
-    const result = await command.execute(context, this.env);
+    const result = await command.execute(args, this.env);
     if (command.serialize) {
       this.history.add({
         command: key,
-        context: await command.serialize(context),
+        args: await command.serialize(args),
       });
     }
 

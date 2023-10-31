@@ -52,10 +52,10 @@ export class Serializer implements ISerializer {
       if (
         typeof entry !== "object" ||
         typeof entry.command !== "string" ||
-        typeof entry.context !== "string"
+        typeof entry.args !== "string"
       ) {
         throw new Error(
-          `CommandInterpreter log entry n°${index} must be of type CommandRecord`
+          `Interpreter log entry n°${index} must be of type CommandRecord`
         );
       }
     });

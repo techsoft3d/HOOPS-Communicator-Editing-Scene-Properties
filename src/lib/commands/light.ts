@@ -16,16 +16,16 @@ export const ClearLightsCmd: Command = {
 
 export const AddLightCmd: Command = {
   name: "addLight",
-  execute: async (context: unknown, env: CommandEnv) => {
-    const args = context as Light;
+  execute: async (args: unknown, env: CommandEnv) => {
+    const a = args as Light;
 
-    const { x, y, z } = args.position;
-    const { r, g, b } = args.color;
+    const { x, y, z } = a.position;
+    const { r, g, b } = a.color;
 
     return await env.hwv.view.addLight(
       new Communicator.Light(
         Communicator.LightType.Directional,
-        args.space === "camera"
+        a.space === "camera"
           ? Communicator.LightSpace.Camera
           : Communicator.LightSpace.World,
         new Communicator.Point3(x, y, z),
@@ -37,8 +37,8 @@ export const AddLightCmd: Command = {
 
 export const RemoveLightCmd: Command = {
   name: "removeLight",
-  execute: async (context: unknown, env: CommandEnv) => {
-    const key = context as Communicator.LightKey;
+  execute: async (args: unknown, env: CommandEnv) => {
+    const key = args as Communicator.LightKey;
 
     env.hwv.view.removeLight(key);
   },
@@ -46,17 +46,17 @@ export const RemoveLightCmd: Command = {
 
 export const UpdateLightCmd: Command = {
   name: "updateLight",
-  execute: async (context: unknown, env: CommandEnv) => {
-    const args = context as Required<Light>;
+  execute: async (args: unknown, env: CommandEnv) => {
+    const a = args as Required<Light>;
 
-    const { x, y, z } = args.position;
-    const { r, g, b } = args.color;
+    const { x, y, z } = a.position;
+    const { r, g, b } = a.color;
 
     env.hwv.view.updateLight(
-      args.key,
+      a.key,
       new Communicator.Light(
         Communicator.LightType.Directional,
-        args.space === "camera"
+        a.space === "camera"
           ? Communicator.LightSpace.Camera
           : Communicator.LightSpace.World,
         new Communicator.Point3(x, y, z),

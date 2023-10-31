@@ -2,14 +2,14 @@ import { Command, CommandEnv } from "./types";
 
 export const SetNodesFaceSpecularColorCmd: Command = {
   name: "setNodesFaceSpecularColor",
-  execute: async (context: unknown, env: CommandEnv) => {
-    const args = context as {
+  execute: async (args: unknown, env: CommandEnv) => {
+    const a = args as {
       nodeIds: number[];
       color: { r: number; g: number; b: number };
     };
 
-    const nodeIds = args.nodeIds;
-    const { r, g, b } = args.color;
+    const nodeIds = a.nodeIds;
+    const { r, g, b } = a.color;
 
     env.hwv.model.setNodesFaceSpecularColor(
       nodeIds,
@@ -20,8 +20,8 @@ export const SetNodesFaceSpecularColorCmd: Command = {
 
 export const UnsetNodesFaceSpecularColorCmd: Command = {
   name: "unsetNodesFaceSpecularColor",
-  execute: async (context: unknown, env: CommandEnv) => {
-    const nodeIds = context as number[];
+  execute: async (args: unknown, env: CommandEnv) => {
+    const nodeIds = args as number[];
 
     env.hwv.model.unsetNodesFaceSpecularColor(nodeIds);
   },
@@ -29,20 +29,20 @@ export const UnsetNodesFaceSpecularColorCmd: Command = {
 
 export const SetNodesFaceSpecularIntensityCmd: Command = {
   name: "setNodesFaceSpecularIntensity",
-  execute: async (context: unknown, env: CommandEnv) => {
-    const args = context as {
+  execute: async (args: unknown, env: CommandEnv) => {
+    const a = args as {
       nodeIds: number[];
       intensity: number;
     };
 
-    env.hwv.model.setNodesFaceSpecularIntensity(args.nodeIds, args.intensity);
+    env.hwv.model.setNodesFaceSpecularIntensity(a.nodeIds, a.intensity);
   },
 };
 
 export const UnsetNodesFaceSpecularIntensityCmd: Command = {
   name: "unsetNodesFaceSpecularIntensity",
-  execute: async (context: unknown, env: CommandEnv) => {
-    const nodeIds = context as number[];
+  execute: async (args: unknown, env: CommandEnv) => {
+    const nodeIds = args as number[];
 
     env.hwv.model.unsetNodesFaceSpecularIntensity(nodeIds);
   },
@@ -50,14 +50,14 @@ export const UnsetNodesFaceSpecularIntensityCmd: Command = {
 
 export const SetNodesAmbientColorCmd: Command = {
   name: "setNodesAmbientColor",
-  execute: async (context: unknown, env: CommandEnv) => {
-    const args = context as {
+  execute: async (args: unknown, env: CommandEnv) => {
+    const a = args as {
       nodeIds: number[];
       color: { r: number; g: number; b: number };
     };
 
-    const nodeIds = args.nodeIds;
-    const { r, g, b } = args.color;
+    const nodeIds = a.nodeIds;
+    const { r, g, b } = a.color;
 
     env.hwv.model.setNodesAmbientColor(
       nodeIds,
@@ -68,26 +68,26 @@ export const SetNodesAmbientColorCmd: Command = {
 
 export const SetNodesAmbientMixCmd: Command = {
   name: "setNodesAmbientMix",
-  execute: async (context: unknown, env: CommandEnv) => {
-    const args = context as {
+  execute: async (args: unknown, env: CommandEnv) => {
+    const a = args as {
       nodeIds: number[];
       intensity: number;
     };
 
-    env.hwv.model.setNodesAmbientMix(args.nodeIds, args.intensity);
+    env.hwv.model.setNodesAmbientMix(a.nodeIds, a.intensity);
   },
 };
 
 export const SetNodesFaceEmissiveColorCmd: Command = {
   name: "setNodesFaceEmissiveColor",
-  execute: async (context: unknown, env: CommandEnv) => {
-    const args = context as {
+  execute: async (args: unknown, env: CommandEnv) => {
+    const a = args as {
       nodeIds: number[];
       color: { r: number; g: number; b: number };
     };
 
-    const nodeIds = args.nodeIds;
-    const { r, g, b } = args.color;
+    const nodeIds = a.nodeIds;
+    const { r, g, b } = a.color;
 
     env.hwv.model.setNodesFaceEmissiveColor(
       nodeIds,
@@ -98,8 +98,8 @@ export const SetNodesFaceEmissiveColorCmd: Command = {
 
 export const UnsetNodesFaceEmissiveColorCmd: Command = {
   name: "unsetNodesFaceEmissiveColor",
-  execute: async (context: unknown, env: CommandEnv) => {
-    const nodeIds = context as number[];
+  execute: async (args: unknown, env: CommandEnv) => {
+    const nodeIds = args as number[];
 
     env.hwv.model.unsetNodesFaceEmissiveColor(nodeIds);
   },

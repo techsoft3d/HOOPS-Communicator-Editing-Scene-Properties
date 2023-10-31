@@ -20,7 +20,7 @@ export class Builder {
   public serializeEnv: (env: CommandEnv) => Promise<string>;
 
   public parseCommand: (str: string) => Promise<unknown>;
-  public serializeCommand: (context: unknown) => Promise<string>;
+  public serializeCommand: (args: unknown) => Promise<string>;
 
   constructor() {
     this._history = new History();
@@ -45,7 +45,7 @@ export class Builder {
     };
 
     this.parseCommand = async (str: string) => JSON.parse(str);
-    this.serializeCommand = async (context: unknown) => JSON.stringify(context);
+    this.serializeCommand = async (args: unknown) => JSON.stringify(args);
   }
 
   /**

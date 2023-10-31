@@ -12,8 +12,8 @@ export interface CommandEnv {
  */
 export interface Command {
   readonly name: string;
-  execute: (context: unknown, env: CommandEnv) => Promise<unknown>;
-  serialize?: (context: unknown) => Promise<string>;
+  execute: (args: unknown, env: CommandEnv) => Promise<unknown>;
+  serialize?: (args: unknown) => Promise<string>;
   parse?: (str: string) => Promise<unknown>;
 }
 
@@ -22,7 +22,7 @@ export interface Command {
  */
 export type CommandRecord = {
   command: string;
-  context: string;
+  args: string;
 };
 
 /**
@@ -39,7 +39,6 @@ export interface IHistory {
  */
 export interface ISerializer {
   serialize: (env: CommandEnv, records: CommandRecord[]) => Promise<string>;
-
   parse: (env: CommandEnv, log: string) => Promise<CommandRecord[]>;
 }
 
