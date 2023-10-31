@@ -11,140 +11,174 @@ import { Command, CommandEnv, IHistory, ISaver, ISerializer } from "./types";
  * dedicated methods
  */
 export class Builder {
-    private _history?: IHistory | (new () => IHistory);
-    private _serializer?: ISerializer | (new () => ISerializer);
-    private _saver?: ISaver | (new () => ISaver);
-    private _commands: Command[];
+  private _history: IHistory | (new () => IHistory);
+  private _serializer: ISerializer | (new () => ISerializer);
+  private _saver: ISaver | (new () => ISaver);
+  private _commands: Command[];
 
-    constructor() {
-        this._history = new History();
-        this._serializer = new Serializer();
-        this._saver = new JsonSaver();
-        this._commands = [];
+  public parseEnv: (env: CommandEnv, str: string) => Promise<void>;
+  public serializeEnv: (env: CommandEnv) => Promise<string>;
+
+  constructor() {
+    this._history = new History();
+    this._serializer = new Serializer();
+    this._saver = new JsonSaver();
+    this._commands = [];
+
+    this.parseEnv = async (env, str) => {
+      const data = JSON.parse(str);
+      if (
+        data["format"] !== env.hwv.getFormatVersionString() ||
+        data["viewer"] !== env.hwv.getViewerVersionString()
+      ) {
+        throw new Error("history file version mismatch");
+      }
+    };
+
+    this.serializeEnv = async (env) => {
+      const format = env.hwv.getFormatVersionString();
+      const viewer = env.hwv.getViewerVersionString();
+      return JSON.stringify({ format, viewer });
+    };
+  }
+
+  /**
+   * Set the history to use with the interpreter
+   * @param history The history to use with the interpreter
+   * @returns This builder to allow operations chaining
+   */
+  public withHistory(history: IHistory | (new () => IHistory)): this {
+    this._history = history;
+    return this;
+  }
+
+  /**
+   * Set the serializer to use with the interpreter
+   * @param serializer The serializer to use with the interpreter
+   * @returns This builder to allow operations chaining
+   */
+  public withSerializer(
+    serializer: ISerializer | (new () => ISerializer)
+  ): this {
+    this._serializer = serializer;
+    return this;
+  }
+
+  /**
+   * Set the saver to use with the interpreter
+   * @param saver The saver to use with the interpreter
+   * @returns This builder to allow operations chaining
+   */
+  public withSaver(saver: ISaver | (new () => ISaver)): this {
+    this._saver = saver;
+    return this;
+  }
+
+  /**
+   * Add commands to the interpreter to build
+   * @param commands the command commands to add to the interpreter
+   * @returns This builder to allow operations chaining
+   */
+  public withCommands(...commands: Command[]): this {
+    this._commands.push(...commands);
+    return this;
+  }
+
+  /**
+   * Shorthand to instantiate the history
+   *
+   * @private
+   * @readonly
+   * @type {IHistory}
+   */
+  private get history(): IHistory {
+    if (typeof this._history === "function") {
+      return new this._history();
     }
 
-    /**
-     * Set the history to use with the interpreter
-     * @param history The history to use with the interpreter
-     * @returns This builder to allow operations chaining
-     */
-    public withHistory(history: IHistory | (new () => IHistory)): this {
-        this._history = history;
-        return this;
+    return this._history;
+  }
+
+  /**if (!this._saver) {
+      return new JsonSaver();
     }
 
-    /**
-     * Set the serializer to use with the interpreter
-     * @param serializer The serializer to use with the interpreter
-     * @returns This builder to allow operations chaining
-     */
-    public withSerializer(serializer: ISerializer | (new () => ISerializer)): this {
-        this._serializer = serializer;
-        return this;
+    
+   * @private
+   * @readonly
+   * @type {ISerializer}
+   */
+  private get serializer(): ISerializer {
+    if (typeof this._serializer === "function") {
+      return new this._serializer();
     }
 
-    /**
-     * Set the saver to use with the interpreter
-     * @param saver The saver to use with the interpreter
-     * @returns This builder to allow operations chaining
-     */
-    public withSaver(saver: ISaver | (new () => ISaver)): this {
-        this._saver = saver;
-        return this;
+    return this._serializer;
+  }
+
+  /**
+   * Shorthand to instantiate the serializer
+   *
+   * @private
+   * @readonly
+   * @type {ISaver}
+   */
+  private get saver(): ISaver {
+    if (typeof this._saver === "function") {
+      return new this._saver();
     }
 
-    /**
-     * Add commands to the interpreter to build
-     * @param commands the command commands to add to the interpreter
-     * @returns This builder to allow operations chaining
-     */
-    public withCommands(...commands: Command[]): this {
-        this._commands.push(...commands);
-        return this;
+    return this._saver;
+  }
+
+  /**
+   * Shorthand to instantiate the command map
+   *
+   * @private
+   * @readonly
+   * @type {Map<string, Command<Env>>}
+   */
+  private get commandMap(): Map<string, Command> {
+    return new Map<string, Command>(
+      this._commands.map((command) => [command.name, command])
+    );
+  }
+
+  /**
+   * Build a complete environment from a partial one. If the environment is
+   * complete it is returned unchanged otherwise it is completed with parseEnv
+   * and serializeEnv.
+   * @param env the environment to build.
+   * @returns A complete environment from a partial one.
+   */
+  public buildEnv(
+    env: Partial<CommandEnv> & { hwv: Communicator.WebViewer }
+  ): CommandEnv {
+    if (!env.parse) {
+      env.parse = this.parseEnv;
     }
 
-    /**
-     * Shorthand to instantiate the history
-     *
-     * @private
-     * @readonly
-     * @type {IHistory}
-     */
-    private get history(): IHistory {
-        if (!this._history) {
-            return new History();
-        }
-
-        if (typeof this._history === "function") {
-            return new this._history();
-        }
-
-        return this._history;
+    if (!env.serialize) {
+      env.serialize = this.serializeEnv;
     }
 
-    /**
-     * Shorthand to instantiate the serializer
-     *
-     * @private
-     * @readonly
-     * @type {ISerializer}
-     */
-    private get serializer(): ISerializer {
-        if (!this._serializer) {
-            return new Serializer();
-        }
+    return env as CommandEnv;
+  }
 
-        if (typeof this._serializer === "function") {
-            return new this._serializer();
-        }
-
-        return this._serializer;
-    }
-
-    /**
-     * Shorthand to instantiate the serializer
-     *
-     * @private
-     * @readonly
-     * @type {ISaver}
-     */
-    private get saver(): ISaver {
-        if (!this._saver) {
-            return new JsonSaver();
-        }
-
-        if (typeof this._saver === "function") {
-            return new this._saver();
-        }
-
-        return this._saver;
-    }
-
-    /**
-     * Shorthand to instantiate the command map
-     *
-     * @private
-     * @readonly
-     * @type {Map<string, Command<Env>>}
-     */
-    private get commandMap(): Map<string, Command> {
-        return new Map<string, Command>(this._commands.map((command) => [command.name, command]));
-    }
-
-    /**
-     * Build an interpreter from the builder's configuration
-     * @param env The environment where the commands will be executed
-     * @returns The created interpreter
-     */
-    public build(env: CommandEnv): Interpreter {
-        return new Interpreter({
-            env,
-            commandMap: this.commandMap,
-            history: this.history,
-            saver: this.saver,
-            serializer: this.serializer,
-        });
-    }
+  /**
+   * Build an interpreter from the builder's configuration
+   * @param env The environment where the commands will be executed
+   * @returns The created interpreter
+   */
+  public buildInterpreter(env: CommandEnv): Interpreter {
+    return new Interpreter({
+      env,
+      commandMap: this.commandMap,
+      history: this.history,
+      saver: this.saver,
+      serializer: this.serializer,
+    });
+  }
 }
 
 export default Builder;
