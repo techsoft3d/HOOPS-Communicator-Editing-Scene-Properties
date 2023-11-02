@@ -16,11 +16,11 @@ export class Builder {
   private _saver: ISaver | (new () => ISaver);
   private _commands: Command[];
 
-  public parseEnv: (env: CommandEnv, str: string) => Promise<void>;
-  public serializeEnv: (env: CommandEnv) => Promise<string>;
+  public envConfParser: (env: CommandEnv, str: string) => Promise<void>;
+  public envConfSerializer: (env: CommandEnv) => Promise<string>;
 
-  public parseCommand: (str: string) => Promise<unknown>;
-  public serializeCommand: (args: unknown) => Promise<string>;
+  public commandArgsParser: (str: string) => Promise<unknown>;
+  public commandArgsSerializer: (args: unknown) => Promise<string>;
 
   constructor() {
     this._history = new History();
@@ -28,7 +28,7 @@ export class Builder {
     this._saver = new JsonSaver();
     this._commands = [];
 
-    this.parseEnv = async (env, str) => {
+    this.envConfParser = async (env, str) => {
       const data = JSON.parse(str);
       if (
         data["format"] !== env.hwv.getFormatVersionString() ||
@@ -38,14 +38,14 @@ export class Builder {
       }
     };
 
-    this.serializeEnv = async (env) => {
+    this.envConfSerializer = async (env) => {
       const format = env.hwv.getFormatVersionString();
       const viewer = env.hwv.getViewerVersionString();
       return JSON.stringify({ format, viewer });
     };
 
-    this.parseCommand = async (str: string) => JSON.parse(str);
-    this.serializeCommand = async (args: unknown) => JSON.stringify(args);
+    this.commandArgsParser = async (str: string) => JSON.parse(str);
+    this.commandArgsSerializer = async (args: unknown) => JSON.stringify(args);
   }
 
   /**
@@ -161,11 +161,11 @@ export class Builder {
     env: Partial<CommandEnv> & { hwv: Communicator.WebViewer }
   ): CommandEnv {
     if (!env.confParser) {
-      env.confParser = this.parseEnv.bind(env);
+      env.confParser = this.envConfParser.bind(env);
     }
 
     if (!env.confSerializer) {
-      env.confSerializer = this.serializeEnv;
+      env.confSerializer = this.envConfSerializer;
     }
 
     return env as CommandEnv;
@@ -180,11 +180,11 @@ export class Builder {
    */
   public buildCommand(cmd: Command): Required<Command> {
     if (!cmd.parse) {
-      cmd.parse = this.parseCommand;
+      cmd.parse = this.commandArgsParser;
     }
 
     if (!cmd.serialize) {
-      cmd.serialize = this.serializeCommand;
+      cmd.serialize = this.commandArgsSerializer;
     }
 
     return cmd as Required<Command>;
@@ -195,9 +195,11 @@ export class Builder {
    * @param env The environment where the commands will be executed
    * @returns The created interpreter
    */
-  public buildInterpreter(env: CommandEnv): Interpreter {
+  public buildInterpreter(
+    env: Partial<CommandEnv> & { hwv: Communicator.WebViewer }
+  ): Interpreter {
     return new Interpreter({
-      env,
+      env: this.buildEnv(env),
       commandMap: this.commandMap,
       history: this.history,
       saver: this.saver,
