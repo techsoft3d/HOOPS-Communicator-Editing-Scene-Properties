@@ -33,12 +33,31 @@ The interpreter will be used as a gateway to the edition APIs.
 
 ## Build and try
 
+### Preamble
+
+Before doing anything on this project you will need to add a few asset files:  
+![assets](doc/added_assets.png)
+
+In `public/models` add `microengine.scs`.  
+In `public/scripts` add
+
+- `engine.wasm`
+- `engine-wasm.js`
+- `hoops_web_viewer.js`
+
+You will also need to add the type declaration files into `src/@types`:  
+![assets](doc/type_declarations.png)
+
+In `src/@types` add `tcc.d.ts` and `hoops_web_viewer.d.ts`.
+
 This project contains both the _Command Interpreter_ library and
 a sample application to demo it (see Tutorial part below).
 
 You can run some command on the project to build the library or the
 application, but you can also run a development server to get live
 feedback if you want to customize the sample.
+
+### Quick Start
 
 ```bash
 # Build the library for production
@@ -600,3 +619,273 @@ The default Serializer uses JSON and produce a file that follows this structure:
 > Note: It will use the `env.confSerializer` and `env.confParser` internally
 
 You can create your own serializer or extend the default one to improve type checking, change the the output format, make it xml, yaml, binary or make any optimization or customization you need.
+
+### The Saver
+
+Finally the last component, the saver. The Saver is the system responsible for persisting the data.
+It can be anything that implements this interface:
+
+```ts
+/**
+ * This interface represents the persistence system used by the interpreter
+ */
+export interface ISaver {
+  export: (destination: unknown, log: string) => Promise<void>;
+  import: (source: unknown) => Promise<string>;
+}
+```
+
+There are several example implementation of this component in [src/lib/commands/Saver.ts](src/lib/commands/Saver.ts):
+
+```ts
+// An example persisting in local storage
+export class LocalSaver implements ISaver {
+  async export(destination: unknown, log: string): Promise<void> {
+    localStorage.setItem(destination as string, log);
+  }
+
+  async import(source: unknown): Promise<string> {
+    const log = localStorage.getItem(source as string);
+    if (log === null) {
+      throw new Error(`Cannot import history from '${source}': Not found`);
+    }
+
+    return log;
+  }
+}
+
+// An example persisting data into a JSON file
+export class JsonSaver implements ISaver {
+  async export(destination: unknown, log: string): Promise<void> {
+    const downloadLink = document.createElement("a");
+    const blobData = new Blob([log], { type: "application/json" });
+    const url = URL.createObjectURL(blobData);
+
+    downloadLink.href = url;
+    downloadLink.download = destination as string;
+    downloadLink.click();
+
+    URL.revokeObjectURL(url);
+  }
+
+  async import(source: unknown): Promise<string> {
+    if (!(source instanceof File)) {
+      throw new Error("JsonSaver.import requires destination to be a File");
+    }
+
+    const reader = new FileReader();
+
+    return new Promise<string>((resolve, reject) => {
+      reader.onloadend = () => {
+        const result = reader.result;
+        if (typeof result === "string") {
+          resolve(result);
+        } else if (result) {
+          resolve(new Uint8Array(result).toString());
+        }
+      };
+
+      reader.onerror = () => {
+        reader.abort();
+        reject(reader.error);
+      };
+
+      reader.readAsText(source);
+    });
+  }
+}
+```
+
+You can write your own saver to save for example on a database or in
+a different type of file (xml, yaml, binary) or maybe compress the
+data.
+
+Now that we have the whole picture, we can create an Interpreter:
+
+```ts
+const cmd = new Interpreter({
+  env,
+  history: new History(),
+  serializer: new Serializer(),
+  saver: new JsonSaver(),
+});
+```
+
+Then we can add all our commands with `cmd.addCommands()`.
+
+## Using a Builder
+
+As you can see instantiating the **Interpreter** can be a little cumbersome especially if you want to create a default one.
+
+The **Builder** allows you to build an interpreter with these systems
+as default in a very straightforward manner:
+
+```ts
+const builder = new Builder();
+
+/* ... */
+
+const cmd = builder.buildInterpreter(env);
+```
+
+> It would not be very useful it it was the only feature of the builder...  
+> Let's dive into its features.
+
+Now let say we want to change a single component in the **Interpreter** we could do
+it through the **Builder**.
+
+```ts
+const builder = new Builder();
+
+/* ... */
+
+// You can pass a constructor directly to the Builder
+builder.withSaver(LocalSaver);
+
+// OR
+
+// You can also pass an object if you want to keep data in the member of the
+// object or need more arguments in the constructor.
+// Note: if you create multiple interpreter they will share the same object.
+const mySaver = new MyCustomSaver(/* some args */);
+builder.withSaver(new LocalSaver());
+
+const cmd = builder.buildInterpreter(env);
+```
+
+This can be applied for History and Serializer.
+
+Now let's discuss about the **Command Environment**, it can be cumbersome to set
+an environment with its `confParser` and `confSerializer`.
+
+The **Builder** comes with default functions to parse and serialize env config so
+you can skip this part, your env will be serializable.  
+Here is the implementation for these functions:
+
+```ts
+export class Builder {
+  constructor() {
+    /* ... */
+    this.envConfParser = async (env, str) => {
+      const data = JSON.parse(str);
+      if (
+        data["format"] !== env.hwv.getFormatVersionString() ||
+        data["viewer"] !== env.hwv.getViewerVersionString()
+      ) {
+        throw new Error("history file version mismatch");
+      }
+    };
+
+    this.envConfSerializer = async (env) => {
+      const format = env.hwv.getFormatVersionString();
+      const viewer = env.hwv.getViewerVersionString();
+      return JSON.stringify({ format, viewer });
+    };
+  }
+}
+```
+
+You can override these with your own implementation on the **Builder**.  
+The **Builder** implements a `buildEnv` function that will set these functions
+to the env if they are missing.
+
+> It's is recommended to set neither or both in order to keep the functions
+> matching.
+> `buildEnv` will set a function if it is missing so setting `envConfParser` and
+> not `envConfSerializer` or the opposite can result in **undefined behavior**.
+
+A big advantage of this is that the **Builder** calls `buildEnv` internally in
+`buildInterpreter`.
+
+This means that you can basically do this:
+
+```ts
+const builder = new Builder();
+
+// builder.envConfParser = myCustomConfParser
+// builder.envConfSerializer = myCustomConfSerializer
+
+/* ... */
+const hwv = new Communicator.WebViewer(/* ... */);
+
+const cmd = builder.buildInterpreter({
+  hwv,
+  member1: "an example extra member",
+});
+```
+
+Another thing that we could get rid of is command serialization.  
+Indeed some commands might share the same serialization process. Most certainly
+every command will be serialized the same except for a few.
+
+the **Builder** comes with default functions to parse and serialize commands'
+arguments so you can skip this part too, your command will be serializable.  
+Here is the implementation for these functions:
+
+```ts
+export class Builder {
+  constructor() {
+    /* ... */
+    this.commandArgsParser = async (str: string) => JSON.parse(str);
+    this.commandArgsSerializer = async (args: unknown) => JSON.stringify(args);
+  }
+}
+```
+
+You can override these with your own implementation on the **Builder**.  
+The **Builder** implements a buildCommand function that will set these functions
+to the command if they are missing.
+
+> It's is recommended to set neither or both in order to keep the functions
+> matching for the same reasons as for `envConfParser` and `envConfSerializer`.
+
+Another advantage of this is that the **Builder** calls `buildCommand`
+internally in `withCommands`.
+
+```ts
+const builder = new Builder();
+
+builder.withCommands({
+  name: "resetCamera",
+  execute: async (args: unknown, env: CommandEnv) => {
+    return env.hwv.view.resetCamera();
+  },
+  {
+    name: "setNodeFaceColor",
+    execute: async (args: unknown, env: CommandEnv) => {
+      const { r, g, b } = args.color;
+
+      return env.hwv.model.setNodeFaceColor(
+        args.node,
+        args.face,
+        new Communicator.Color(r, g, b)
+      );
+    },
+
+    // You can still override serialization/parsing for command individually
+    serialize: async (args: unknown): Promise<string> => {
+    return colorToHex(args as Color);
+    },
+    parse: async (str: string): Promise<unknown> => {
+      return hexToColor(str);
+    },
+  }
+})
+
+const hwv = new Communicator.WebViewer(/* ... */);
+
+const cmd = builder.buildInterpreter({
+  hwv
+});
+
+cmd.addCommands(builder.buildCommand({
+  name: "setNodeRgbaColor",
+  execute: async (args: unknown, env: CommandEnv) => {
+    /* ... */
+  },
+}));
+```
+
+At this point you know pretty much everything about the **Command Interpreter**
+and you should be able to make it yours.  
+Do not hesitate to read the code in the `src/lib` directory.
