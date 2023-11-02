@@ -37,6 +37,11 @@ export default defineConfig((config: UserConfig) => {
     case "development":
       config.build.minify = false;
       break;
+
+    case "app":
+      config.build.minify = false;
+      config.build.lib = undefined;
+      break;
   }
 
   return config;
