@@ -110,6 +110,7 @@ For example:
 // src/app/controllers/PhongController
 
 export default class PhongController {
+  public readonly cmd: Interpreter;
   public readonly specularNodeIdElm: HTMLInputElement;
   public readonly specularColorElm: HTMLInputElement;
   public readonly specularApplyBtn: HTMLButtonElement;
@@ -125,7 +126,8 @@ export default class PhongController {
   public readonly emissiveApplyBtn: HTMLButtonElement;
   public readonly emissiveClearBtn: HTMLButtonElement;
 
-  constructor() {
+  constructor(cmd: Interpreter) {
+    this.cmd = cmd;
     this.specularNodeIdElm = getElementById<HTMLInputElement>(`specular-node`);
     this.specularColorElm = getElementById<HTMLInputElement>(`specular-color`);
     this.specularApplyBtn = getElementById<HTMLButtonElement>(`specular-apply`);
@@ -298,7 +300,7 @@ export const resetCameraCmd: Command = {
 };
 
 // Here is an example with an object as argument.
-export const SetNodeFaceColorCmd: Command = {
+export const setNodeFaceColorCmd: Command = {
   name: "setNodeFaceColor",
   execute: async (args: unknown, env: CommandEnv) => {
     const { r, g, b } = args.color;
@@ -331,12 +333,12 @@ Now let's add the commands to our interpreter:
 const cmd = new Interpreter({
   /* ... */
 });
-cmd.addCommands(resetCameraCmd, SetNodeFaceColorCmd, unsetNodesFaceColorCmd);
+cmd.addCommands(resetCameraCmd, setNodeFaceColorCmd, unsetNodesFaceColorCmd);
 // You can also add commands one by one
 cmd.addCommands(resetCameraCmd);
 
 // You can chain the operations
-cmd.addCommands(SetNodeFaceColorCmd).addCommands(unsetNodesFaceColorCmd);
+cmd.addCommands(setNodeFaceColorCmd).addCommands(unsetNodesFaceColorCmd);
 
 // or use spread operator on an array
 cmd.addCommands(
@@ -362,7 +364,6 @@ function.
 Let's create a command and improve it step by step.
 
 ```ts
-// Here is an example with an object as argument.
 export const setNodeRgbaColorCmd: Command = {
   name: "setNodeRgbaColor",
   execute: async (args: unknown, env: CommandEnv) => {
@@ -375,6 +376,10 @@ export const setNodeRgbaColorCmd: Command = {
     await this.hwv.model.setNodesOpacity([args.nodes], a);
   },
 };
+
+/* ... */
+
+cmd.addCommands(setNodeRgbaColorCmd);
 ```
 
 This simple command sets the color and the opacity of some nodes.
@@ -382,7 +387,6 @@ This simple command sets the color and the opacity of some nodes.
 We may want to check that the args matches with the expected type:
 
 ```ts
-// Here is an example with an object as argument.
 export const setNodeRgbaColorCmd: Command = {
   name: "setNodeRgbaColor",
   execute: async (args: unknown, env: CommandEnv) => {
@@ -410,3 +414,189 @@ export const setNodeRgbaColorCmd: Command = {
   },
 };
 ```
+
+### Serialization
+
+By default the arguments of a command are not serializable/parsable (except if
+you use a **Builder** more on that later).
+
+If you want to make your command serializable arguments and parsable you can add
+callbacks to your object:
+
+```ts
+export const setNodeRgbaColorCmd: Command = {
+  name: "setNodeRgbaColor",
+  execute: async (args: unknown, env: CommandEnv) => {
+    /* ... */
+  },
+  serialize: async (args: unknown): Promise<string> => {
+    return JSON.stringify(args);
+  },
+  parse: async (str: string): Promise<unknown> => {
+    return JSON.parse(str);
+  },
+};
+```
+
+Now our command can be serialize into a string and exported into a
+file or a storage system. I can also be imported from a file or a
+storage system.
+
+There are several ways to improve this code, first we know we should never trust the input data so we could make some tests on
+the json data we parse.
+
+```ts
+export const setNodeRgbaColorCmd: Command = {
+  name: "setNodeRgbaColor",
+  /* ... */
+  parse: async (str: string): Promise<unknown> => {
+    const obj = JSON.parse(str);
+    if (
+      typeof obj.r !== "number" ||
+      typeof obj.g !== "number" ||
+      typeof obj.b !== "number" ||
+      typeof obj.a !== "number"
+    ) {
+      throw new Error(`Cannot parse rgba color, received: '${str}'`);
+    }
+  },
+};
+```
+
+We may also argue that storing the color as a #RRGGBBAA string
+would be more data efficient.
+Let's try it
+
+```ts
+// This function will convert a Color into a #RRGGBBAA string
+function colorToHex(rgba: Color): string {
+  /* ... */
+}
+
+// This function will convert a #RRGGBBAA string into a Color
+// or throw an Error if the string can't be parsed.
+function hexToColor(hex: string): Color {
+  /* ... */
+}
+
+export const setNodeRgbaColorCmd: Command = {
+  name: "setNodeRgbaColor",
+  execute: async (args: unknown, env: CommandEnv) => {
+    /* ... */
+  },
+  serialize: async (args: unknown): Promise<string> => {
+    return colorToHex(args as Color);
+  },
+  parse: async (str: string): Promise<unknown> => {
+    return hexToColor(str);
+  },
+};
+```
+
+## Tuning the Interpreter
+
+The Interpreter component itself is made out of several components:
+
+```ts
+export class Interpreter {
+  public env: CommandEnv;
+
+  public readonly history: IHistory;
+  public readonly serializer: ISerializer;
+  public readonly saver: ISaver;
+
+  /* ... */
+
+  constructor(props: {
+    env: CommandEnv;
+    history: IHistory;
+    serializer: ISerializer;
+    saver: ISaver;
+    commandMap?: Map<string, Command>;
+  }) {
+    /* ... */
+  }
+}
+```
+
+### The Command Environment
+
+The **Command Environment** is the "_global variables_" of your commands. It will be passed to the command alongside the arguments.  
+it can
+contain anything you want to share it must match this this type:
+
+```ts
+/**
+ * Default environment for commands' runtime
+ */
+export interface CommandEnv {
+  hwv: Communicator.WebViewer;
+  confSerializer: (env: CommandEnv) => Promise<string>;
+  confParser: (env: CommandEnv, str: string) => Promise<void>;
+}
+```
+
+It should contain at least the **WebViewer** and a confSerializer and a
+confParser, you can use it to check compatibility of versions or save parameters
+in the env depending on your use case.
+
+### The History
+
+The History component is responsible for holding the latest commands the user have played.
+
+It can be any anything that implements this interface:
+
+```ts
+/**
+ * This interface represents a command history in the interpreter
+ */
+export interface IHistory {
+  add: (...records: CommandRecord[]) => this;
+  clear: () => this;
+  records: CommandRecord[];
+}
+
+/**
+ * This type represents a command recorded in the history
+ */
+export type CommandRecord = {
+  command: string;
+  args: string;
+};
+```
+
+A CommandRecord is an object that has the name of a command as `command` and a string representing the serialized arguments as `args`.
+
+A default implementation of the History is available is [src/lib/commands/History.ts](src/lib/commands/History.ts).
+You can create your own history or extend the default one to limit the number of record or make some optimizations.
+
+### The Serializer
+
+The serializer component will serialize your environment configuration and your history's records into a string and parse a string to extract your configuration and an array of records.
+
+It can be any anything that implements this interface:
+
+```ts
+/**
+ * This interface represents the serialization system used by the interpreter
+ */
+export interface ISerializer {
+  serialize: (env: CommandEnv, records: CommandRecord[]) => Promise<string>;
+  parse: (env: CommandEnv, log: string) => Promise<CommandRecord[]>;
+}
+```
+
+A default implementation of the History is available is [src/lib/commands/Serializer.ts](src/lib/commands/History.ts).
+
+The default Serializer uses JSON and produce a file that follows this structure:
+
+```json
+{
+  "config": /* your config */,
+  "history": [/* your records */],
+}
+```
+
+> Note: It will use the `env.confSerializer` and `env.confParser` internally
+
+You can create your own serializer or extend the default one to improve type checking, change the the output format, make it xml, yaml, binary or make any optimization or customization you need.
