@@ -16,7 +16,7 @@ export class Serializer implements ISerializer {
     records: CommandRecord[]
   ): Promise<string> {
     return JSON.stringify({
-      config: await env.serializer(env),
+      config: await env.confSerializer(env),
       history: records,
     });
   }
@@ -38,7 +38,7 @@ export class Serializer implements ISerializer {
       throw new Error("log must contain a config field");
     }
 
-    await env.parser(env, config);
+    await env.confParser(env, config);
     const history = result["history"];
     if (history === undefined) {
       throw new Error("log must contain a history field");

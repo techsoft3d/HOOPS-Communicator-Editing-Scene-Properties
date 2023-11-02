@@ -1,11 +1,11 @@
 /**
  * Default environment for commands' runtime
  */
-export interface CommandEnv {
+export type CommandEnv = {
   hwv: Communicator.WebViewer;
-  serializer: (env: CommandEnv) => Promise<string>;
-  parser: (env: CommandEnv, str: string) => Promise<void>;
-}
+  confSerializer: (env: CommandEnv) => Promise<string>;
+  confParser: (env: CommandEnv, str: string) => Promise<void>;
+};
 
 /**
  * This interface represents a command in the interpreter

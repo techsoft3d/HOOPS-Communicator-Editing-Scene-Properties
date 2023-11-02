@@ -160,12 +160,12 @@ export class Builder {
   public buildEnv(
     env: Partial<CommandEnv> & { hwv: Communicator.WebViewer }
   ): CommandEnv {
-    if (!env.parser) {
-      env.parser = this.parseEnv.bind(env);
+    if (!env.confParser) {
+      env.confParser = this.parseEnv.bind(env);
     }
 
-    if (!env.serializer) {
-      env.serializer = this.serializeEnv;
+    if (!env.confSerializer) {
+      env.confSerializer = this.serializeEnv;
     }
 
     return env as CommandEnv;
