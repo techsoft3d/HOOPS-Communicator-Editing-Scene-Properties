@@ -31,6 +31,26 @@ The interpreter will be used as a gateway to the edition APIs.
 > });
 > ```
 
+## Build and try
+
+This project contains both the _Command Interpreter_ library and
+a sample application to demo it (see Tutorial part below).
+
+You can run some command on the project to build the library or the
+application, but you can also run a development server to get live
+feedback if you want to customize the sample.
+
+```bash
+# Build the library for production
+npm run build
+
+# Build the library for development (non-minified)
+npm run build-dev
+
+# Build the sample application
+npm run build-app
+```
+
 ## Tutorial
 
 In this tutorial we will produce this simple demo application:
@@ -349,7 +369,7 @@ export const setNodeRgbaColorCmd: Command = {
     const { r, g, b, a } = args.color;
 
     await this.hwv.model.setNodesFaceColor(
-      [args.nodes],
+      args.nodes,
       new Communicator.Color(r, g, b)
     );
     await this.hwv.model.setNodesOpacity([args.nodes], a);
@@ -357,4 +377,36 @@ export const setNodeRgbaColorCmd: Command = {
 };
 ```
 
-This simple command sets the color
+This simple command sets the color and the opacity of some nodes.
+
+We may want to check that the args matches with the expected type:
+
+```ts
+// Here is an example with an object as argument.
+export const setNodeRgbaColorCmd: Command = {
+  name: "setNodeRgbaColor",
+  execute: async (args: unknown, env: CommandEnv) => {
+    if (!args.color || !args.nodes) {
+      throw new Error("args does not match expected type");
+    }
+
+    if (!args.color["r"] || !args.color["g"] || !args.color["b"]) {
+      throw new Error("args does not match expected type");
+    }
+
+    if (!Array.isArray(args.nodes) || !args.nodes.length) {
+      throw new Error("args does not match expected type");
+    }
+
+    /* ... */
+
+    const { r, g, b, a } = args.color;
+
+    await this.hwv.model.setNodesFaceColor(
+      args.nodes,
+      new Communicator.Color(r, g, b)
+    );
+    await this.hwv.model.setNodesOpacity(args.nodes, a);
+  },
+};
+```
