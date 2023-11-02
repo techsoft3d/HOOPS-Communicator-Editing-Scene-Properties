@@ -16,16 +16,16 @@ export class Interpreter {
 
   constructor({
     env,
-    commandMap,
     history,
     serializer,
     saver,
+    commandMap,
   }: {
     env: CommandEnv;
-    commandMap?: Map<string, Command>;
     history: IHistory;
     serializer: ISerializer;
     saver: ISaver;
+    commandMap?: Map<string, Command>;
   }) {
     this.env = env;
     this.history = history;
