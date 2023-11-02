@@ -4,7 +4,7 @@ export function getElementById<T extends HTMLElement>(id: string): T {
   const elm = document.getElementById(id) as T | null;
 
   if (!elm) {
-    throw new Error(`missing dom element '${id}'`);
+    throw new Error(`missing dom element '#${id}'`);
   }
 
   return elm;
