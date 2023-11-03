@@ -555,7 +555,7 @@ export interface CommandEnv {
 }
 ```
 
-It should contain at least the **WebViewer** and a confSerializer and a
+It should contain at least the **WebViewer**, a confSerializer and a
 confParser, you can use it to check compatibility of versions or save parameters
 in the env depending on your use case.
 
@@ -748,7 +748,7 @@ builder.withSaver(LocalSaver);
 // object or need more arguments in the constructor.
 // Note: if you create multiple interpreter they will share the same object.
 const mySaver = new MyCustomSaver(/* some args */);
-builder.withSaver(new LocalSaver());
+builder.withSaver(mySaver);
 
 const cmd = builder.buildInterpreter(env);
 ```
