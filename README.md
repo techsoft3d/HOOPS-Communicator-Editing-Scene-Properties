@@ -60,14 +60,21 @@ feedback if you want to customize the sample.
 ### Quick Start
 
 ```bash
-# Build the library for production
-npm run build
-
-# Build the library for development (non-minified)
-npm run build-dev
+# Install the dependencies
+npm install
 
 # Build the sample application
 npm run build-app
+
+#OR
+
+# Build the library for production
+npm run build
+
+# OR
+
+# Build the library for development (non-minified)
+npm run build-dev
 ```
 
 ## Tutorial
