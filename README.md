@@ -888,4 +888,4 @@ cmd.addCommands(builder.buildCommand({
 
 At this point you know pretty much everything about the **Command Interpreter**
 and you should be able to make it yours.  
-Do not hesitate to read the code in the `src/lib` directory.
+Do not hesitate to read the code in the `src/lib` directory. 
